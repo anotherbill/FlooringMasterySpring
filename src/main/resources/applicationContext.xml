@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+  http://www.springframework.org/schema/beans/spring-beans.xsd
+  http://www.springframework.org/schema/mvc
+  http://www.springframework.org/schema/mvc/spring-mvc.xsd
+  http://www.springframework.org/schema/tx 
+  http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+  http://www.springframework.org/schema/context
+  http://www.springframework.org/schema/context/spring-context.xsd
+  http://www.springframework.org/schema/aop   
+  http://www.springframework.org/schema/aop/spring-aop-3.2.xsd"> 
+
+    <!-- Bean definitions go here -->
+
+
+
+    <bean id="Io" class="com.swcguild.flooringmastery.ui.ConsoleIO"/>
+    <bean id="Bl" class="com.swcguild.flooringmastery.factory.BusinessLogic"/>
+    <bean id="Oui" class="com.swcguild.flooringmastery.ui.OrderUI"/>
+    <bean id="Ol" class="com.swcguild.flooringmastery.dao.OrderList"/>
+    <bean id="Tl" class="com.swcguild.flooringmastery.dao.TaxList"/>
+    <bean id="Pl" class="com.swcguild.flooringmastery.dao.ProductList"/>
+    
+    <bean id="oc" class="com.swcguild.flooringmasteryproject.OrderController">
+        <property name="io" ref="Io"/>
+        <property name="bl" ref="Bl"/>
+        <property name="oui" ref="Oui"/>
+        <property name="ol" ref="Ol"/>
+        <property name="tl" ref="Tl"/>
+        <property name="pl" ref="Pl"/>
+    </bean>
+    <!--Aspect config  the aop comes from above(line 6)--> 
+    <bean id="simpleTimerAspect" class="Aspects.SimpleTimerAspect"/>
+    <bean id="auditLog" class="Aspects.AuditLog"/>
+    <aop:config>
+<!--        <aop:aspect ref="getAverageServerAge">
+            <aop:before 
+                method="simpleTimerAspect"
+                pointcut="execution(* com.swcguild.olympian.Event.compete(..))"/>
+            <aop:after
+                method="simpleTimerAspect"
+                pointcut="execution(* com.swcguild.olympian.Event.compete(..))"/>
+            
+        </aop:aspect>-->
+        
+        <aop:aspect ref="simpleTimerAspect">
+            <aop:around 
+                method="timeMethod"
+                pointcut="execution(* com.swcguild.flooringmastery.dao.OrderList.readOrderList(..))"/>
+            <aop:around 
+                method="timeMethod"
+                pointcut="execution(* com.swcguild.flooringmastery.dao.OrderList.writeOrderList(..))"/>
+           
+        </aop:aspect>
+        <aop:aspect ref="auditLog">
+            <aop:after
+                method="auditLog"
+                pointcut="execution(* com.swcguild.flooringmastery.dao.OrderList.addOrder(..))"/>
+            <aop:after
+                method="auditLog"
+                pointcut="execution(* com.swcguild.flooringmastery.dao.OrderList.removeOrder(..))"/>
+        </aop:aspect>
+    </aop:config>
+
+</beans>
